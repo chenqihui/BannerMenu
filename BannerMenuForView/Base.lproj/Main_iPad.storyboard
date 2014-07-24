@@ -17,10 +17,13 @@
                         <rect key="frame" x="0.0" y="0.0" width="768" height="1024"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
-                            <textView appearanceType="aqua" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" fixedFrame="YES" showsHorizontalScrollIndicator="NO" text="由于本人不太会用PS，所以直接用使用91游戏SDK的图片，这里申明只用于模仿使用。by chen" translatesAutoresizingMaskIntoConstraints="NO" id="CMO-5O-K2j">
+                            <textView appearanceType="aqua" clipsSubviews="YES" multipleTouchEnabled="YES" userInteractionEnabled="NO" contentMode="scaleToFill" fixedFrame="YES" showsHorizontalScrollIndicator="NO" text="由于本人不太会用PS，所以直接使用91游戏SDK的图片，这里申明只用于模仿使用。by chen" translatesAutoresizingMaskIntoConstraints="NO" id="CMO-5O-K2j">
                                 <rect key="frame" x="185" y="404" width="399" height="216"/>
                                 <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                 <color key="backgroundColor" red="1" green="1" blue="1" alpha="1" colorSpace="calibratedRGB"/>
+                                <accessibility key="accessibilityConfiguration">
+                                    <accessibilityTraits key="traits" none="YES" notEnabled="YES"/>
+                                </accessibility>
                                 <fontDescription key="fontDescription" type="system" pointSize="14"/>
                                 <textInputTraits key="textInputTraits" autocapitalizationType="sentences"/>
                             </textView>

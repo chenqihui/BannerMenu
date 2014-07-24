@@ -18,7 +18,7 @@
 
 - (void)viewDidLoad
 {
-    BannerMenuView *bannerMV = [[BannerMenuView alloc] initWithFrame:CGRectMake(0, 60, isIpad?80:40, isIpad?80:40) menuWidth:isIpad?300:200];
+    BannerMenuView *bannerMV = [[BannerMenuView alloc] initWithFrame:CGRectMake(0, 60, isIpad?80:60, isIpad?80:60) menuWidth:isIpad?300:200];
     [self.view addSubview:bannerMV];
 }
 
