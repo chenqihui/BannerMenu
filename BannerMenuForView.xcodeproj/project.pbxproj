@@ -518,6 +518,7 @@
 				74AD53A71981497400549056 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 		74AD53A81981497400549056 /* Build configuration list for PBXNativeTarget "BannerMenuForViewTests" */ = {
 			isa = XCConfigurationList;
@@ -526,6 +527,7 @@
 				74AD53AA1981497400549056 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
 	};

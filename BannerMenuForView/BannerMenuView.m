@@ -34,6 +34,11 @@ typedef NS_ENUM (NSUInteger, LocationTag)
     float _nLogoHeight;//浮标的高度
     float _nMenuWidth;//菜单栏的宽度
     float _nMenuHeight;//菜单栏的高度＝＝浮标的宽度
+    
+    LocationTag _locationTag;
+    float _w;
+    float _h;
+    UIDeviceOrientation _lastOrientation;
 }
 
 @end
@@ -62,6 +67,9 @@ typedef NS_ENUM (NSUInteger, LocationTag)
 
 - (void)initV:(CGRect)frame menuWidth:(float)nWidth
 {
+    [[UIDevice currentDevice] beginGeneratingDeviceOrientationNotifications];
+    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(deviceOrientationDidChange:) name:UIDeviceOrientationDidChangeNotification object:nil];
+
     _bShowMenu = NO;
     _bMoving = NO;
     
@@ -69,6 +77,13 @@ typedef NS_ENUM (NSUInteger, LocationTag)
 //    UIImage *img = [UIImage imageWithContentsOfFile:[FilePath getFilePath:@"ass_common_icon_hide.png"]];
 //    _nLogoWidth = img.size.width;
 //    _nMenuHeight = _nLogoHeight = img.size.height;
+    
+    _locationTag = kLocationTag_bottom;
+    _lastOrientation = (int)[UIDevice currentDevice].orientation;
+    _w = [self superview].frame.size.width;
+    _h = [self superview].frame.size.height;
+    
+    _locationTag = kLocationTag_bottom;
     _nLogoWidth = frame.size.width;
     _nMenuHeight = _nLogoHeight = frame.size.height;
     _nMenuWidth = nWidth;
@@ -78,6 +93,12 @@ typedef NS_ENUM (NSUInteger, LocationTag)
     UIImageView *menuBgIV = [[UIImageView alloc] initWithFrame:CGRectMake(0, 0, _nMenuWidth, _nMenuHeight)];
     [menuBgIV setTag:MENUBGTAG];
     [_bannerMenuV addSubview:menuBgIV];
+    [_bannerMenuV setHidden:YES];
+    
+    UILabel *welcomeL = [[UILabel alloc] initWithFrame:menuBgIV.bounds];
+    [welcomeL setText:@" welcome to chen's world"];
+    [welcomeL setTextColor:[UIColor whiteColor]];
+    [menuBgIV addSubview:welcomeL];
     
     _bannerIV = [[UIImageView alloc] initWithFrame:CGRectMake(0, 0, _nLogoWidth, _nLogoHeight)];
     [self setBannerImageView:YES];
@@ -102,12 +123,13 @@ typedef NS_ENUM (NSUInteger, LocationTag)
     [_bannerIV setImage:img];
 }
 
-- (void)showMenu:(BOOL)bShow
+- (void)showMenu:(BOOL)bShow time:(float)times complete:(void(^)())complete
 {
     self.userInteractionEnabled = NO;
     NSString *path = nil;
     if (bShow)
     {
+        [_bannerMenuV setHidden:NO];
         if (self.frame.origin.x == 0)
         {
             UIImage *img = [UIImage imageWithContentsOfFile:[FilePath getFilePath:@"ass_tb_bg_left.png"]];
@@ -116,12 +138,13 @@ typedef NS_ENUM (NSUInteger, LocationTag)
             [self setFrame:CGRectMake(self.frame.origin.x, self.frame.origin.y, _nMenuWidth + _nLogoWidth, _nMenuHeight)];
             [_bannerIV setFrame:CGRectMake(0, 0, _nLogoWidth, _nLogoHeight)];
             [_bannerMenuV setFrame:CGRectMake(_nLogoWidth, 0, 0, _nMenuHeight)];
-            [UIView animateWithDuration:0.3 animations:^
+            [UIView animateWithDuration:times animations:^
             {
                 [_bannerMenuV setFrame:CGRectMake(_nLogoWidth, 0, _nMenuWidth, _nMenuHeight)];
             } completion:^(BOOL finished)
             {
-                [self shakeMenu:self];
+                self.userInteractionEnabled = YES;
+                complete();
             }];
         }else
         {
@@ -131,13 +154,13 @@ typedef NS_ENUM (NSUInteger, LocationTag)
             [self setFrame:CGRectMake(self.frame.origin.x - _nMenuWidth, self.frame.origin.y, _nMenuWidth + _nLogoWidth, _nMenuHeight)];
             [_bannerIV setFrame:CGRectMake(_nMenuWidth, 0, _nLogoWidth, _nLogoHeight)];
             [_bannerMenuV setFrame:CGRectMake(_nMenuWidth, 0, 0, _nMenuHeight)];
-            [UIView animateWithDuration:0.3 animations:^
+            [UIView animateWithDuration:times animations:^
              {
                  [_bannerMenuV setFrame:CGRectMake(0, 0, _nMenuWidth, _nMenuHeight)];
              } completion:^(BOOL finished)
              {
-                 
-                 [self shakeMenu:self];
+                 self.userInteractionEnabled = YES;
+                 complete();
              }];
         }
         UIImage *img = [UIImage imageWithContentsOfFile:path];
@@ -149,19 +172,20 @@ typedef NS_ENUM (NSUInteger, LocationTag)
         {
             [self setFrame:CGRectMake(self.frame.origin.x, self.frame.origin.y, _nLogoWidth, _nMenuHeight)];
             [_bannerIV setFrame:CGRectMake(0, 0, _nLogoWidth, _nLogoHeight)];
-            [UIView animateWithDuration:0.3 animations:^
+            [UIView animateWithDuration:times animations:^
              {
                  [_bannerMenuV setFrame:CGRectMake(_nLogoWidth, 0, 0, _nLogoHeight)];
              } completion:^(BOOL finished)
              {
                  UIImage *img = [UIImage imageWithContentsOfFile:path];
                  [_bannerIV setImage:[img resizableImageWithCapInsets:UIEdgeInsetsMake(img.size.height/2, img.size.width/2, img.size.height/2, img.size.width/2)]];
-                 
-                 [self shakeMenu:self];
+                 [_bannerMenuV setHidden:YES];
+                 self.userInteractionEnabled = YES;
+                 complete();
              }];
         }else
         {
-            [UIView animateWithDuration:0.3 animations:^
+            [UIView animateWithDuration:times animations:^
              {
                  [_bannerMenuV setFrame:CGRectMake(_nMenuWidth, 0, 0, _nMenuHeight)];
              } completion:^(BOOL finished)
@@ -170,8 +194,9 @@ typedef NS_ENUM (NSUInteger, LocationTag)
                  [_bannerIV setFrame:CGRectMake(0, 0, _nLogoWidth, _nLogoHeight)];
                  UIImage *img = [UIImage imageWithContentsOfFile:path];
                  [_bannerIV setImage:[img resizableImageWithCapInsets:UIEdgeInsetsMake(img.size.height/2, img.size.width/2, img.size.height/2, img.size.width/2)]];
-                 
-                 [self shakeMenu:self];
+                 [_bannerMenuV setHidden:YES];
+                 self.userInteractionEnabled = YES;
+                 complete();
              }];
         }
     }
@@ -196,6 +221,87 @@ typedef NS_ENUM (NSUInteger, LocationTag)
     [animation setDuration:0.1];
     [animation setRepeatCount:2];
     [lbl addAnimation:animation forKey:nil];
+}
+
+- (void)computeOfLocation:(void(^)())complete
+{
+    
+    //    float w = [self superview].frame.size.width;
+    //    float h = [self superview].frame.size.height;
+    
+    float x = self.center.x;
+    float y = self.center.y;
+    CGPoint m = CGPointZero;
+    m.x = x;
+    m.y = y;
+    
+    //这里是可以根据上左下右边距，取近的位置靠边-------------------
+    //    if (x < w/2 && y <= h/2)
+    //    {
+    //        if (x < y)
+    //            locationTag = kLocationTag_left;
+    //        else
+    //            locationTag = kLocationTag_top;
+    //    }else if (x > w/2 && y < h/2)
+    //    {
+    //        if (w - x < y)
+    //            locationTag = kLocationTag_right;
+    //        else
+    //            locationTag = kLocationTag_top;
+    //    }else if (x < w/2 && y > h/2)
+    //    {
+    //        if (x < h - y)
+    //            locationTag = kLocationTag_left;
+    //        else
+    //            locationTag = kLocationTag_bottom;
+    //    }else //if (x > _w/2 && y > _h/2)//在中间就归为第四象限
+    //    {
+    //        if (w - x < h - y)
+    //            locationTag = kLocationTag_right;
+    //        else
+    //            locationTag = kLocationTag_bottom;
+    //    }
+    
+    //由于这里要展开菜单，所以只取两边就好--------------------------
+    if (x < _w/2)
+    {
+        _locationTag = kLocationTag_left;
+    }else
+    {
+        _locationTag = kLocationTag_right;
+    }
+    
+    //---------------------------------------------------------
+    
+    switch (_locationTag)
+    {
+        case kLocationTag_top:
+            m.y = 0 + _bannerIV.frame.size.width/2 + 20;
+            break;
+        case kLocationTag_left:
+            m.x = 0 + _bannerIV.frame.size.height/2;
+            break;
+        case kLocationTag_bottom:
+            m.y = _h - _bannerIV.frame.size.height/2;
+            break;
+        case kLocationTag_right:
+            m.x = _w - _bannerIV.frame.size.width/2;
+            break;
+    }
+    
+    //这个是在旋转是微调浮标出界时
+    if (m.x > _w - _bannerIV.frame.size.width/2)
+        m.x = _w - _bannerIV.frame.size.width/2;
+    if (m.y > _h - _bannerIV.frame.size.height/2)
+        m.y = _h - _bannerIV.frame.size.height/2;
+    
+    [UIView animateWithDuration:0.1 animations:^
+     {
+         [self setCenter:m];
+     } completion:^(BOOL finished)
+     {
+         complete();
+     }];
 }
 
 #pragma mark - action
@@ -226,82 +332,18 @@ typedef NS_ENUM (NSUInteger, LocationTag)
     if (!_bMoving)
     {
         _bShowMenu = !_bShowMenu;
-        [self showMenu:_bShowMenu];
+        [self showMenu:_bShowMenu time:0.3 complete:^
+        {
+            [self shakeMenu:self];
+        }];
         return;
     }
     
-    float w = [self superview].frame.size.width;
-    float h = [self superview].frame.size.height;
-    
-    LocationTag locationTag = kLocationTag_bottom;
-    float x = self.center.x;
-    float y = self.center.y;
-    CGPoint m = CGPointZero;
-    m.x = x;
-    m.y = y;
-    
-    //这里是可以根据上左下右边距，取近的位置靠边-------------------
-//    if (x < w/2 && y <= h/2)
-//    {
-//        if (x < y)
-//            locationTag = kLocationTag_left;
-//        else
-//            locationTag = kLocationTag_top;
-//    }else if (x > w/2 && y < h/2)
-//    {
-//        if (w - x < y)
-//            locationTag = kLocationTag_right;
-//        else
-//            locationTag = kLocationTag_top;
-//    }else if (x < w/2 && y > h/2)
-//    {
-//        if (x < h - y)
-//            locationTag = kLocationTag_left;
-//        else
-//            locationTag = kLocationTag_bottom;
-//    }else //if (x > _w/2 && y > _h/2)//在中间就归为第四象限
-//    {
-//        if (w - x < h - y)
-//            locationTag = kLocationTag_right;
-//        else
-//            locationTag = kLocationTag_bottom;
-//    }
-    
-    //由于这里要展开菜单，所以只取两边就好--------------------------
-    if (x < w/2)
+    [self computeOfLocation:^
     {
-        locationTag = kLocationTag_left;
-    }else
-    {
-        locationTag = kLocationTag_right;
-    }
-    
-    //---------------------------------------------------------
-    
-    switch (locationTag)
-    {
-        case kLocationTag_top:
-            m.y = 0 + _bannerIV.frame.size.width/2 + 20;
-            break;
-        case kLocationTag_left:
-            m.x = 0 + _bannerIV.frame.size.height/2;
-            break;
-        case kLocationTag_bottom:
-            m.y = h - _bannerIV.frame.size.height/2;
-            break;
-        case kLocationTag_right:
-            m.x = w - _bannerIV.frame.size.width/2;
-            break;
-    }
-    
-    [UIView animateWithDuration:0.1 animations:^
-     {
-         [self setCenter:m];
-     } completion:^(BOOL finished)
-     {
-         [self setBannerImageView:YES];
-         _bMoving = NO;
-     }];
+        [self setBannerImageView:YES];
+        _bMoving = NO;
+    }];
 }
 
 - (void)touchesMoved:(NSSet *)touches withEvent:(UIEvent *)event
@@ -316,9 +358,9 @@ typedef NS_ENUM (NSUInteger, LocationTag)
     CGPoint movedPT = [touch locationInView:[self superview]];
     
     if (movedPT.x - self.frame.size.width/2 < 0.f ||
-        movedPT.x + self.frame.size.width/2 > [self superview].frame.size.width ||
+        movedPT.x + self.frame.size.width/2 > _w ||
         movedPT.y - self.frame.size.height/2 < isIos7?20.f:0.f ||
-        movedPT.y + self.frame.size.height/2 > [self superview].frame.size.height)
+        movedPT.y + self.frame.size.height/2 > _h)
     {
         return;
     }
@@ -335,6 +377,67 @@ typedef NS_ENUM (NSUInteger, LocationTag)
             self.userInteractionEnabled = YES;
         });
     }
+}
+
+#pragma mark - NSNotification
+
+- (void)deviceOrientationDidChange:(NSNotification *)notification
+{
+    UIDeviceOrientation currentOrientation = (int)[UIDevice currentDevice].orientation;
+    if(currentOrientation == UIDeviceOrientationPortraitUpsideDown ||
+       currentOrientation == UIDeviceOrientationFaceUp ||
+       currentOrientation == UIDeviceOrientationFaceDown ||
+       _lastOrientation == UIDeviceOrientationPortraitUpsideDown ||
+       _lastOrientation == currentOrientation)
+    {
+        _lastOrientation = currentOrientation;
+        return;
+    }
+    
+    void(^func)(BOOL b) = ^(BOOL b)
+    {
+        switch ((int)[UIDevice currentDevice].orientation)
+        {
+            case UIDeviceOrientationPortrait:
+            {
+                _w = [self superview].frame.size.width;
+                _h = [self superview].frame.size.height;
+                break;
+            }
+            case UIDeviceOrientationLandscapeLeft:
+            case UIDeviceOrientationLandscapeRight:
+            {
+                _w = [self superview].frame.size.height;
+                _h = [self superview].frame.size.width;
+                break;
+            }
+        }
+        [self computeOfLocation:^
+         {
+            if (b)
+            {
+                _bShowMenu = YES;
+                [self showMenu:_bShowMenu time:0 complete:^
+                {
+                    _bMoving = NO;
+                }];
+            }
+         }];
+    };
+    
+    BOOL bS = _bShowMenu;
+    if(bS)
+    {
+        _bShowMenu = NO;
+        [self showMenu:_bShowMenu time:0 complete:^
+        {
+            func(bS);
+        }];
+    }else
+    {
+        func(bS);
+    }
+    _lastOrientation = currentOrientation;
 }
 
 @end
