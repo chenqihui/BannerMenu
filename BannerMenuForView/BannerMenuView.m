@@ -384,9 +384,13 @@ typedef NS_ENUM (NSUInteger, LocationTag)
 - (void)deviceOrientationDidChange:(NSNotification *)notification
 {
     UIDeviceOrientation currentOrientation = (int)[UIDevice currentDevice].orientation;
+    
+    if(currentOrientation == UIDeviceOrientationFaceUp ||
+       currentOrientation == UIDeviceOrientationFaceDown)
+    {
+        return;
+    }
     if(currentOrientation == UIDeviceOrientationPortraitUpsideDown ||
-       currentOrientation == UIDeviceOrientationFaceUp ||
-       currentOrientation == UIDeviceOrientationFaceDown ||
        _lastOrientation == UIDeviceOrientationPortraitUpsideDown ||
        _lastOrientation == currentOrientation)
     {
