@@ -1,6 +1,10 @@
 BannerMenu
 ==========
 
+![image](https://github.com/chenqihui/BannerMenu/blob/master/screenshots/BannerAppGif.gif)
+
+![iamge](https://github.com/chenqihui/BannerMenu/blob/master/screenshots/BannerAppHGif.gif)
+
 高仿91（百度）游戏SDK的浮标菜单
 
 （支持iPhone和iPad）
