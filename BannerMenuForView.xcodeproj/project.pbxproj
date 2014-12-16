@@ -22,13 +22,13 @@
 		74AD53981981497400549056 /* UIKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 74AD53771981497400549056 /* UIKit.framework */; };
 		74AD53A01981497400549056 /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = 74AD539E1981497400549056 /* InfoPlist.strings */; };
 		74AD53A21981497400549056 /* BannerMenuForViewTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 74AD53A11981497400549056 /* BannerMenuForViewTests.m */; };
-		74AD53B519814A4400549056 /* BannerMenuView.m in Sources */ = {isa = PBXBuildFile; fileRef = 74AD53AC19814A4400549056 /* BannerMenuView.m */; };
+		74AD53B519814A4400549056 /* QHBannerMenuView.m in Sources */ = {isa = PBXBuildFile; fileRef = 74AD53AC19814A4400549056 /* QHBannerMenuView.m */; };
 		74AD53B619814A4400549056 /* ass_common_icon@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 74AD53AE19814A4400549056 /* ass_common_icon@2x.png */; };
 		74AD53B819814A4400549056 /* ass_tb_bg_left@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 74AD53B019814A4400549056 /* ass_tb_bg_left@2x.png */; };
 		74AD53B919814A4400549056 /* ass_tb_bg_right@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 74AD53B119814A4400549056 /* ass_tb_bg_right@2x.png */; };
 		74AD53BA19814A4400549056 /* ass_tb_return_left@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 74AD53B219814A4400549056 /* ass_tb_return_left@2x.png */; };
 		74AD53BB19814A4400549056 /* ass_tb_return_right@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 74AD53B319814A4400549056 /* ass_tb_return_right@2x.png */; };
-		74AD53BE19814AF600549056 /* FilePath.m in Sources */ = {isa = PBXBuildFile; fileRef = 74AD53BD19814AF600549056 /* FilePath.m */; };
+		74AD53BE19814AF600549056 /* QHFilePath.m in Sources */ = {isa = PBXBuildFile; fileRef = 74AD53BD19814AF600549056 /* QHFilePath.m */; };
 		74AD53C519814D5D00549056 /* ass_common_icon_hide@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 74AD53C419814D5D00549056 /* ass_common_icon_hide@2x.png */; };
 /* End PBXBuildFile section */
 
@@ -63,16 +63,16 @@
 		74AD539D1981497400549056 /* BannerMenuForViewTests-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "BannerMenuForViewTests-Info.plist"; sourceTree = "<group>"; };
 		74AD539F1981497400549056 /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/InfoPlist.strings; sourceTree = "<group>"; };
 		74AD53A11981497400549056 /* BannerMenuForViewTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = BannerMenuForViewTests.m; sourceTree = "<group>"; };
-		74AD53AB19814A4400549056 /* BannerMenuView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BannerMenuView.h; sourceTree = "<group>"; };
-		74AD53AC19814A4400549056 /* BannerMenuView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BannerMenuView.m; sourceTree = "<group>"; };
+		74AD53AB19814A4400549056 /* QHBannerMenuView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = QHBannerMenuView.h; sourceTree = "<group>"; };
+		74AD53AC19814A4400549056 /* QHBannerMenuView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = QHBannerMenuView.m; sourceTree = "<group>"; };
 		74AD53AE19814A4400549056 /* ass_common_icon@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "ass_common_icon@2x.png"; sourceTree = "<group>"; };
 		74AD53B019814A4400549056 /* ass_tb_bg_left@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "ass_tb_bg_left@2x.png"; sourceTree = "<group>"; };
 		74AD53B119814A4400549056 /* ass_tb_bg_right@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "ass_tb_bg_right@2x.png"; sourceTree = "<group>"; };
 		74AD53B219814A4400549056 /* ass_tb_return_left@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "ass_tb_return_left@2x.png"; sourceTree = "<group>"; };
 		74AD53B319814A4400549056 /* ass_tb_return_right@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "ass_tb_return_right@2x.png"; sourceTree = "<group>"; };
 		74AD53B419814A4400549056 /* QHViewTag.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = QHViewTag.h; sourceTree = "<group>"; };
-		74AD53BC19814AF600549056 /* FilePath.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FilePath.h; sourceTree = "<group>"; };
-		74AD53BD19814AF600549056 /* FilePath.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = FilePath.m; sourceTree = "<group>"; };
+		74AD53BC19814AF600549056 /* QHFilePath.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = QHFilePath.h; sourceTree = "<group>"; };
+		74AD53BD19814AF600549056 /* QHFilePath.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = QHFilePath.m; sourceTree = "<group>"; };
 		74AD53C419814D5D00549056 /* ass_common_icon_hide@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "ass_common_icon_hide@2x.png"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -133,10 +133,10 @@
 		74AD53791981497400549056 /* BannerMenuForView */ = {
 			isa = PBXGroup;
 			children = (
-				74AD53BC19814AF600549056 /* FilePath.h */,
-				74AD53BD19814AF600549056 /* FilePath.m */,
-				74AD53AB19814A4400549056 /* BannerMenuView.h */,
-				74AD53AC19814A4400549056 /* BannerMenuView.m */,
+				74AD53BC19814AF600549056 /* QHFilePath.h */,
+				74AD53BD19814AF600549056 /* QHFilePath.m */,
+				74AD53AB19814A4400549056 /* QHBannerMenuView.h */,
+				74AD53AC19814A4400549056 /* QHBannerMenuView.m */,
 				74AD53851981497400549056 /* Main_iPhone.storyboard */,
 				74AD53881981497400549056 /* Main_iPad.storyboard */,
 				74AD538B1981497400549056 /* ViewController.h */,
@@ -297,9 +297,9 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				74AD53BE19814AF600549056 /* FilePath.m in Sources */,
+				74AD53BE19814AF600549056 /* QHFilePath.m in Sources */,
 				74AD538D1981497400549056 /* ViewController.m in Sources */,
-				74AD53B519814A4400549056 /* BannerMenuView.m in Sources */,
+				74AD53B519814A4400549056 /* QHBannerMenuView.m in Sources */,
 				74AD53841981497400549056 /* AppDelegate.m in Sources */,
 				74AD53801981497400549056 /* main.m in Sources */,
 			);

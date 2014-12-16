@@ -6,13 +6,16 @@
 //  Copyright (c) 2014年 chen. All rights reserved.
 //
 
-#import "BannerMenuView.h"
+#import "QHBannerMenuView.h"
 
 //点击后扩大的大小
 #define SCALESIZE 5
 
 //展开菜单view的标记
 #define MENUBGTAG 1
+
+//展开菜单按钮的标记
+#define MENUBTN_TAG  754
 
 typedef NS_ENUM (NSUInteger, LocationTag)
 {
@@ -22,7 +25,7 @@ typedef NS_ENUM (NSUInteger, LocationTag)
     kLocationTag_right
 };
 
-@interface BannerMenuView ()
+@interface QHBannerMenuView ()
 {
     UIView *_bannerMenuV;//展开菜单的view
     UIImageView *_bannerIV;//浮标的imageview
@@ -39,18 +42,28 @@ typedef NS_ENUM (NSUInteger, LocationTag)
     float _w;
     float _h;
     UIDeviceOrientation _lastOrientation;
+    
+    
+    NSTimer *_countDownTimer;
+    unsigned int secondsCountDown;
+    BOOL _bHiddenLogo;
+    
+    CGFloat _nShowHidden;
+    UIImageView *_menuBgIV;
 }
+
+@property (nonatomic, strong) SelectBlock selectBlock;
 
 @end
 
-@implementation BannerMenuView
+@implementation QHBannerMenuView
 
 - (id)initWithFrame:(CGRect)frame
 {
     self = [super initWithFrame:frame];
     if (self) {
         // Initialization code
-        [self initV:frame menuWidth:200];
+        [self initV:frame menuWidth:200 buttonTitle:nil];
     }
     return self;
 }
@@ -60,13 +73,38 @@ typedef NS_ENUM (NSUInteger, LocationTag)
     self = [super initWithFrame:frame];
     if (self) {
         // Initialization code
-        [self initV:frame menuWidth:nWidth];
+        [self initV:frame menuWidth:nWidth buttonTitle:nil];
     }
     return self;
 }
 
-- (void)initV:(CGRect)frame menuWidth:(float)nWidth
+- (id)initWithFrame:(CGRect)frame menuWidth:(float)nWidth buttonTitle:(NSArray *)arButtonTitle withBlock:(SelectBlock) selectBlock
 {
+    self = [super initWithFrame:frame];
+    if (self) {
+        // Initialization code
+        self.selectBlock = selectBlock;
+        [self initV:frame menuWidth:nWidth buttonTitle:arButtonTitle];
+    }
+    return self;
+}
+
+- (id)initWithFrame:(CGRect)frame menuWidth:(float)nWidth delegate:(id<QHBannerMenuViewDelegate>)delegate
+{
+    self = [super initWithFrame:frame];
+    if (self) {
+        // Initialization code
+        self.delegate = delegate;
+        [self initV:frame menuWidth:nWidth buttonTitle:nil];
+    }
+    return self;
+}
+
+- (void)initV:(CGRect)frame menuWidth:(float)nWidth buttonTitle:(NSArray *)arButtonTitle
+{
+    self.userInteractionEnabled = YES;
+    _nShowHidden = 2;
+    
     [[UIDevice currentDevice] beginGeneratingDeviceOrientationNotifications];
     [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(deviceOrientationDidChange:) name:UIDeviceOrientationDidChangeNotification object:nil];
 
@@ -90,15 +128,54 @@ typedef NS_ENUM (NSUInteger, LocationTag)
     
     _bannerMenuV = [[UIView alloc] initWithFrame:CGRectMake(_nLogoWidth, 0, 0, 0)];
     [_bannerMenuV setClipsToBounds:YES];
-    UIImageView *menuBgIV = [[UIImageView alloc] initWithFrame:CGRectMake(0, 0, _nMenuWidth, _nMenuHeight)];
-    [menuBgIV setTag:MENUBGTAG];
-    [_bannerMenuV addSubview:menuBgIV];
+    _menuBgIV = [[UIImageView alloc] initWithFrame:CGRectMake(0, 0, _nMenuWidth, _nMenuHeight)];
+    [_menuBgIV setTag:MENUBGTAG];
+    [_bannerMenuV addSubview:_menuBgIV];
     [_bannerMenuV setHidden:YES];
     
-    UILabel *welcomeL = [[UILabel alloc] initWithFrame:menuBgIV.bounds];
-    [welcomeL setText:@" welcome to chen's world"];
-    [welcomeL setTextColor:[UIColor whiteColor]];
-    [menuBgIV addSubview:welcomeL];
+    _menuBgIV.userInteractionEnabled = YES;
+    if (arButtonTitle != nil)
+    {
+        CGFloat wBtn = nWidth/arButtonTitle.count;
+        [arButtonTitle enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop)
+         {
+             NSString *buttonTitle = obj;
+             UIButton *btn = [UIButton buttonWithType:UIButtonTypeCustom];
+             btn.frame = CGRectMake(wBtn*idx, 0, wBtn, _nMenuHeight);
+             [btn setTitle:buttonTitle forState:UIControlStateNormal];
+             btn.tag = MENUBTN_TAG + idx;
+             [_menuBgIV addSubview:btn];
+             [btn addTarget:self action:@selector(btnAction:) forControlEvents:UIControlEventTouchUpInside];
+         }];
+    }else
+    {
+        if (self.delegate == nil)
+        {
+            UILabel *welcomeL = [[UILabel alloc] initWithFrame:_menuBgIV.bounds];
+            [welcomeL setText:@" welcome to chen's world"];
+            [welcomeL setTextColor:[UIColor whiteColor]];
+            [_menuBgIV addSubview:welcomeL];
+        }else
+        {
+            int rows = [self.delegate bannerMenuView:self];
+            CGFloat wBtn = nWidth/rows;
+            for (NSUInteger idx = 0; idx < rows; idx++)
+            {
+                UIButton *btn = [UIButton buttonWithType:UIButtonTypeCustom];
+                btn.frame = CGRectMake(wBtn*idx, 0, wBtn, _nMenuHeight);
+                [btn setBackgroundColor:[UIColor clearColor]];
+                btn.tag = MENUBTN_TAG + idx;
+                [_menuBgIV addSubview:btn];
+                [btn addTarget:self action:@selector(btnAction:) forControlEvents:UIControlEventTouchUpInside];
+                
+                UIView *view = [self.delegate bannerMenuView:self menuForRowAtIndexPath:idx];
+                view.userInteractionEnabled = NO;
+                view.frame = btn.bounds;
+                view.tag = MENUBTN_TAG + idx;
+                [btn addSubview:view];
+            }
+        }
+    }
     
     _bannerIV = [[UIImageView alloc] initWithFrame:CGRectMake(0, 0, _nLogoWidth, _nLogoHeight)];
     [self setBannerImageView:YES];
@@ -114,13 +191,15 @@ typedef NS_ENUM (NSUInteger, LocationTag)
     NSString *path = nil;
     if (bHide)
     {
-        path = [FilePath getFilePath:@"ass_common_icon_hide.png"];
+        path = [QHFilePath getFilePath:@"ass_common_icon_hide.png"];
     }else
     {
-        path = [FilePath getFilePath:@"ass_common_icon.png"];
+        path = [QHFilePath getFilePath:@"ass_common_icon.png"];
     }
     UIImage *img = [UIImage imageWithContentsOfFile:path];
     [_bannerIV setImage:img];
+    if (bHide)
+        [self starTimerHidden:bHide];
 }
 
 - (void)showMenu:(BOOL)bShow time:(float)times complete:(void(^)())complete
@@ -132,9 +211,9 @@ typedef NS_ENUM (NSUInteger, LocationTag)
         [_bannerMenuV setHidden:NO];
         if (self.frame.origin.x == 0)
         {
-            UIImage *img = [UIImage imageWithContentsOfFile:[FilePath getFilePath:@"ass_tb_bg_left.png"]];
+            UIImage *img = [UIImage imageWithContentsOfFile:[QHFilePath getFilePath:@"ass_tb_bg_left.png"]];
             [((UIImageView *)[_bannerMenuV viewWithTag:MENUBGTAG]) setImage:[img resizableImageWithCapInsets:UIEdgeInsetsMake(img.size.height/2, img.size.width/2, img.size.height/2, img.size.width/2)]];
-            path = [FilePath getFilePath:@"ass_tb_return_left.png"];
+            path = [QHFilePath getFilePath:@"ass_tb_return_left.png"];
             [self setFrame:CGRectMake(self.frame.origin.x, self.frame.origin.y, _nMenuWidth + _nLogoWidth, _nMenuHeight)];
             [_bannerIV setFrame:CGRectMake(0, 0, _nLogoWidth, _nLogoHeight)];
             [_bannerMenuV setFrame:CGRectMake(_nLogoWidth, 0, 0, _nMenuHeight)];
@@ -148,9 +227,9 @@ typedef NS_ENUM (NSUInteger, LocationTag)
             }];
         }else
         {
-            UIImage *img = [UIImage imageWithContentsOfFile:[FilePath getFilePath:@"ass_tb_bg_right.png"]];
+            UIImage *img = [UIImage imageWithContentsOfFile:[QHFilePath getFilePath:@"ass_tb_bg_right.png"]];
             [((UIImageView *)[_bannerMenuV viewWithTag:MENUBGTAG]) setImage:[img resizableImageWithCapInsets:UIEdgeInsetsMake(img.size.height/2, img.size.width/2, img.size.height/2, img.size.width/2)]];
-            path = [FilePath getFilePath:@"ass_tb_return_right.png"];
+            path = [QHFilePath getFilePath:@"ass_tb_return_right.png"];
             [self setFrame:CGRectMake(self.frame.origin.x - _nMenuWidth, self.frame.origin.y, _nMenuWidth + _nLogoWidth, _nMenuHeight)];
             [_bannerIV setFrame:CGRectMake(_nMenuWidth, 0, _nLogoWidth, _nLogoHeight)];
             [_bannerMenuV setFrame:CGRectMake(_nMenuWidth, 0, 0, _nMenuHeight)];
@@ -167,7 +246,7 @@ typedef NS_ENUM (NSUInteger, LocationTag)
         [_bannerIV setImage:[img resizableImageWithCapInsets:UIEdgeInsetsMake(img.size.height/2, img.size.width/2, img.size.height/2, img.size.width/2)]];
     }else
     {
-        path = [FilePath getFilePath:@"ass_common_icon_hide.png"];
+        path = [QHFilePath getFilePath:@"ass_common_icon_hide.png"];
         if (self.frame.origin.x == 0)
         {
             [self setFrame:CGRectMake(self.frame.origin.x, self.frame.origin.y, _nLogoWidth, _nMenuHeight)];
@@ -306,15 +385,31 @@ typedef NS_ENUM (NSUInteger, LocationTag)
 
 #pragma mark - action
 
+- (void)btnAction:(UIButton *)btn
+{
+    if (self.delegate == nil)
+    {
+        self.selectBlock(btn.tag - MENUBTN_TAG);
+    }else
+    {
+        if ([self.delegate respondsToSelector:@selector(bannerMenuView:didSelectRowAtIndexPath:)])
+        {
+            [self.delegate bannerMenuView:self didSelectRowAtIndexPath:btn.tag - MENUBTN_TAG];
+        }
+    }
+}
+
 #pragma mark - UIResponder
 
 - (void)touchesBegan:(NSSet *)touches withEvent:(UIEvent *)event
 {
     _bMoving = NO;
+    [self stopDownTimer];
+    [self show];
     if (!_bShowMenu)
     {
         [_bannerIV setFrame:CGRectMake(_bannerIV.frame.origin.x, _bannerIV.frame.origin.y, _bannerIV.frame.size.width + SCALESIZE, _bannerIV.frame.size.height + SCALESIZE)];
-        NSString *path = [FilePath getFilePath:@"ass_common_icon.png"];
+        NSString *path = [QHFilePath getFilePath:@"ass_common_icon.png"];
         UIImage *img = [UIImage imageWithContentsOfFile:path];
         [_bannerIV setImage:img];
     }
@@ -336,6 +431,8 @@ typedef NS_ENUM (NSUInteger, LocationTag)
         {
             [self shakeMenu:self];
         }];
+        if (!_bShowMenu)
+            [self starTimerHidden:YES];
         return;
     }
     
@@ -392,24 +489,33 @@ typedef NS_ENUM (NSUInteger, LocationTag)
     {
         return;
     }
+    [self stopDownTimer];
+    [self show];
     
     void(^func)(BOOL b) = ^(BOOL b)
     {
-        switch ((int)[UIDevice currentDevice].orientation)
+        if (([[[UIDevice currentDevice] systemVersion] floatValue]) < 8)
         {
-            case UIDeviceOrientationPortrait:
+            switch ((int)[UIDevice currentDevice].orientation)
             {
-                _w = [self superview].frame.size.width;
-                _h = [self superview].frame.size.height;
-                break;
+                case UIDeviceOrientationPortrait:
+                {
+                    _w = [self superview].frame.size.width;
+                    _h = [self superview].frame.size.height;
+                    break;
+                }
+                case UIDeviceOrientationLandscapeLeft:
+                case UIDeviceOrientationLandscapeRight:
+                {
+                    _w = [self superview].frame.size.height;
+                    _h = [self superview].frame.size.width;
+                    break;
+                }
             }
-            case UIDeviceOrientationLandscapeLeft:
-            case UIDeviceOrientationLandscapeRight:
-            {
-                _w = [self superview].frame.size.height;
-                _h = [self superview].frame.size.width;
-                break;
-            }
+        }else
+        {
+            _w = [self superview].frame.size.width;
+            _h = [self superview].frame.size.height;
         }
         [self computeOfLocation:^
          {
@@ -420,7 +526,8 @@ typedef NS_ENUM (NSUInteger, LocationTag)
                 {
                     _bMoving = NO;
                 }];
-            }
+            }else
+                [self starTimerHidden:YES];
          }];
     };
     
@@ -438,5 +545,105 @@ typedef NS_ENUM (NSUInteger, LocationTag)
     }
     _lastOrientation = currentOrientation;
 }
+
+#pragma mark -
+
+- (void)starTimerHidden:(BOOL)bTimer
+{
+    if (bTimer)
+    {
+        secondsCountDown = 5;
+        if (_countDownTimer == nil)
+        {
+            _countDownTimer = [NSTimer scheduledTimerWithTimeInterval:1 target:self selector:@selector(countDownAuthCode) userInfo:nil repeats:YES];
+        }else
+        {
+            [_countDownTimer setFireDate:[NSDate distantFuture]];
+            [_countDownTimer setFireDate:[NSDate distantPast]];
+        }
+    }else
+    {
+        if (_bHiddenLogo)
+        {
+            [self show];
+        }
+        [self stopDownTimer];
+    }
+}
+
+- (void)countDownAuthCode
+{
+//    NSLog(@"%d", secondsCountDown);
+    secondsCountDown--;
+    if (secondsCountDown == 0)
+    {
+        [self hidden];
+        [self stopDownTimer];
+    }
+}
+
+- (void)hidden
+{
+    if (!_bHiddenLogo)
+    {
+        _bHiddenLogo = YES;
+        __async_main__, ^
+        {
+            [UIView animateWithDuration:0.3f animations:^
+             {
+                 if (CGRectGetMinX(self.frame) <= 0)
+                 {
+                     float left = _bannerIV.frame.origin.x-_nLogoWidth/_nShowHidden;
+                     _bannerIV.frame = CGRectMake(left, _bannerIV.frame.origin.y, _bannerIV.frame.size.width, _bannerIV.frame.size.height);
+                 }else
+                 {
+                     float right = CGRectGetMinX(_bannerIV.frame) + _nLogoWidth/_nShowHidden;
+                     _bannerIV.frame = CGRectMake(right, _bannerIV.frame.origin.y, _bannerIV.frame.size.width, _bannerIV.frame.size.height);
+                 }
+             }];
+        });
+    }
+}
+
+- (void)show
+{
+    if (_bHiddenLogo)
+    {
+        _bHiddenLogo = NO;
+        __async_main__, ^
+        {
+//            [UIView animateWithDuration:0.3f animations:^
+//             {
+                 if (CGRectGetMinX(self.frame) <= 0)
+                 {
+                     float left = CGRectGetMinX(_bannerIV.frame) + _nLogoWidth/_nShowHidden;
+                     _bannerIV.frame = CGRectMake(left, _bannerIV.frame.origin.y, _bannerIV.frame.size.width, _bannerIV.frame.size.height);
+                 }else
+                 {
+                     float right = CGRectGetMinX(_bannerIV.frame) - _nLogoWidth/_nShowHidden;
+                     _bannerIV.frame = CGRectMake(right, _bannerIV.frame.origin.y, _bannerIV.frame.size.width, _bannerIV.frame.size.height);
+                 }
+//             }];
+        });
+    }
+}
+
+- (void)stopDownTimer
+{
+    if (_countDownTimer != nil)
+    {
+        [_countDownTimer setFireDate:[NSDate distantFuture]];
+    }
+}
+
+/**
+ *  修改弹出的菜单的背景图片
+ *  PS:这里其实是定制的样式，单纯改menu的背景图效果不会太好的
+ *  @param image 图片
+ */
+//- (void)setMenuBackgroundImage:(UIImage *)image
+//{
+//    _menuBgIV.image = image;
+//}
 
 @end

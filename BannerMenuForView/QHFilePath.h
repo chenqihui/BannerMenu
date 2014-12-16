@@ -8,7 +8,7 @@
 
 #import <Foundation/Foundation.h>
 
-@interface FilePath : NSObject
+@interface QHFilePath : NSObject
 
 + (NSString *)getFilePath:(NSString *)fileNameAndType;
 

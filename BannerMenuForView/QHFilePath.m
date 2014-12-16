@@ -6,9 +6,9 @@
 //  Copyright (c) 2014年 chen. All rights reserved.
 //
 
-#import "FilePath.h"
+#import "QHFilePath.h"
 
-@implementation FilePath
+@implementation QHFilePath
 
 + (NSString *)getFilePath:(NSString *)fileNameAndType
 {
